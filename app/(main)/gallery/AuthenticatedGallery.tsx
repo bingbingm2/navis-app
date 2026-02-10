@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -61,7 +61,36 @@ export default function AuthenticatedGallery({
   const [chatLoading, setChatLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  const [cityImages, setCityImages] = useState<Record<string, string>>({});
+  const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>({});
+
   const router = useRouter();
+
+  const fetchCityImage = useCallback(async (destination: string) => {
+    const cacheKey = `city-img-${destination.toLowerCase().trim()}`;
+
+    // Check localStorage cache first
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      setCityImages((prev) => ({ ...prev, [destination]: cached }));
+      return;
+    }
+
+    setLoadingImages((prev) => ({ ...prev, [destination]: true }));
+
+    try {
+      const res = await fetch(`/api/city-image?city=${encodeURIComponent(destination)}`);
+      const data = await res.json();
+      if (data.image) {
+        setCityImages((prev) => ({ ...prev, [destination]: data.image }));
+        localStorage.setItem(cacheKey, data.image);
+      }
+    } catch (error) {
+      console.error("Error fetching city image for", destination, error);
+    } finally {
+      setLoadingImages((prev) => ({ ...prev, [destination]: false }));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchTrips = async () => {
@@ -76,7 +105,17 @@ export default function AuthenticatedGallery({
     };
 
     fetchTrips();
-  }, [user.uid]);
+  }, [user.uid, fetchCityImage]);
+
+  // Fetch city images for all trips
+  useEffect(() => {
+    const destinations = [...new Set(trips.map((t) => t.destination))];
+    destinations.forEach((dest) => {
+      if (!cityImages[dest] && !loadingImages[dest]) {
+        fetchCityImage(dest);
+      }
+    });
+  }, [trips, cityImages, loadingImages, fetchCityImage]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -483,12 +522,30 @@ Is there anything else you'd like to modify?`,
                 onClick={() => { setSelectedTrip(trip); setSelectedPlace(null); setShowChat(false); setChatMessages([]); }}
                 className="bg-white rounded-2xl shadow-sm border-2 border-gray-100 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-violet-200"
               >
-                <div className="bg-gradient-to-r from-violet-600 to-blue-600 p-5 text-white">
-                  <div className="flex items-center gap-2 text-white/80 text-sm mb-2">
-                    <MapPin className="w-4 h-4" />
-                    {trip.destination}
+                <div className="relative h-40 overflow-hidden">
+                  {cityImages[trip.destination] ? (
+                    <img
+                      src={cityImages[trip.destination]}
+                      alt={trip.destination}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-r from-violet-600 to-blue-600 flex items-center justify-center">
+                      {loadingImages[trip.destination] ? (
+                        <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <MapPin className="w-10 h-10 text-white/60" />
+                      )}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                    <div className="flex items-center gap-2 text-white/90 text-sm mb-1">
+                      <MapPin className="w-4 h-4" />
+                      {trip.destination}
+                    </div>
+                    <h3 className="text-xl font-bold truncate drop-shadow-lg">{trip.destination} Adventure</h3>
                   </div>
-                  <h3 className="text-xl font-bold truncate">{trip.destination} Adventure</h3>
                 </div>
 
                 <div className="p-5">
