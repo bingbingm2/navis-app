@@ -23,12 +23,9 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="relative w-8 h-8">
-                <Compass className="w-8 h-8 text-violet-500 transition-transform duration-500 group-hover:rotate-45" />
-                <div className="absolute inset-0 bg-violet-500 blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
-              </div>
+
               <span className="text-2xl font-bold text-white font-display tracking-tight">
-                Naviya
+                Navis
               </span>
             </Link>
             <p className="text-sm leading-relaxed text-gray-400">
@@ -108,7 +105,7 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-500">
-              &copy; {currentYear} Naviya Inc. All rights reserved.
+              &copy; {currentYear} Navis Inc. All rights reserved.
             </p>
 
             <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500">

@@ -83,16 +83,9 @@ export default function NavBarThemed({ variant = "light" }: NavBarProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="relative w-8 h-8">
-              <img
-                src="/images/Naviya-logo-svg.svg"
-                alt="Naviya"
-                className="w-8 h-8 transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className={`absolute inset-0 ${isDark ? "bg-violet-400" : "bg-violet-400"} blur-lg opacity-20 group-hover:opacity-40 transition-opacity`} />
-            </div>
+
             <span className={`text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${colors.logoGradient} font-display tracking-tight`}>
-              Naviya
+              Navis
             </span>
           </Link>
 

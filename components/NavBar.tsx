@@ -59,12 +59,9 @@ export default function NavBar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="relative w-8 h-8">
-              <Compass className="w-8 h-8 text-violet-600 transition-transform duration-500 group-hover:rotate-45" />
-              <div className="absolute inset-0 bg-violet-400 blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
-            </div>
+
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-blue-600 font-display tracking-tight">
-              Naviya
+              Navis
             </span>
           </Link>
 
