@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import { db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
 
-// In-memory cache to avoid regenerating images for the same city
+// In-memory cache to avoid redundant Firestore reads within the same server process
 const imageCache = new Map<string, string>();
 
 export async function GET(request: NextRequest) {
@@ -15,12 +17,23 @@ export async function GET(request: NextRequest) {
 
   const cacheKey = city.toLowerCase().trim();
 
-  // Return cached image if available
+  // 1. Check in-memory cache
   if (imageCache.has(cacheKey)) {
     return NextResponse.json({ image: imageCache.get(cacheKey) });
   }
 
   try {
+    // 2. Check Firestore for a previously saved image
+    const docRef = doc(db, "cityImages", cacheKey);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const image = docSnap.data().image as string;
+      imageCache.set(cacheKey, image);
+      return NextResponse.json({ image });
+    }
+
+    // 3. Generate a new image with Nano Banana
     const prompt = `A stunning, iconic wide-angle photograph of ${city}. Show the most recognizable landmark or skyline of the city. Golden hour lighting, vibrant colors, professional travel photography style. No text or watermarks.`;
 
     const response = await ai.models.generateContent({
@@ -39,7 +52,15 @@ export async function GET(request: NextRequest) {
     for (const part of parts) {
       if (part.inlineData) {
         const base64Image = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-        // Cache the result
+
+        // 4. Save to Firestore for permanent persistence
+        await setDoc(docRef, {
+          city: city,
+          image: base64Image,
+          createdAt: new Date().toISOString(),
+        });
+
+        // 5. Cache in memory
         imageCache.set(cacheKey, base64Image);
         return NextResponse.json({ image: base64Image });
       }
