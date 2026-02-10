@@ -63,6 +63,7 @@ export default function AuthenticatedGallery({
 
   const [cityImages, setCityImages] = useState<Record<string, string>>({});
   const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>({});
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   const router = useRouter();
 
@@ -83,10 +84,14 @@ export default function AuthenticatedGallery({
       const data = await res.json();
       if (data.image) {
         setCityImages((prev) => ({ ...prev, [destination]: data.image }));
+        // Cache in localStorage for persistence across page reloads
         localStorage.setItem(cacheKey, data.image);
+      } else {
+        setFailedImages((prev) => ({ ...prev, [destination]: true }));
       }
     } catch (error) {
       console.error("Error fetching city image for", destination, error);
+      setFailedImages((prev) => ({ ...prev, [destination]: true }));
     } finally {
       setLoadingImages((prev) => ({ ...prev, [destination]: false }));
     }
@@ -111,11 +116,11 @@ export default function AuthenticatedGallery({
   useEffect(() => {
     const destinations = [...new Set(trips.map((t) => t.destination))];
     destinations.forEach((dest) => {
-      if (!cityImages[dest] && !loadingImages[dest]) {
+      if (!cityImages[dest] && !loadingImages[dest] && !failedImages[dest]) {
         fetchCityImage(dest);
       }
     });
-  }, [trips, cityImages, loadingImages, fetchCityImage]);
+  }, [trips, cityImages, loadingImages, failedImages, fetchCityImage]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const prompt = `A stunning, iconic wide-angle photograph of ${city}. Show the most recognizable landmark or skyline of the city. Golden hour lighting, vibrant colors, professional travel photography style. No text or watermarks.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
+      model: "nano-banana-pro-preview",
       contents: prompt,
       config: {
         responseModalities: ["Image"],
