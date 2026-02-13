@@ -40,8 +40,14 @@ function transformToItineraryClient(
   // Group events by day
   const dayGroups: Record<string, any[]> = {};
 
+  // Extract the selected date range boundaries
+  const rangeStart = startDate.split("T")[0];
+  const rangeEnd = endDate.split("T")[0];
+
   itinerary.forEach((item: any) => {
-    const dayKey = item.start_time?.split("T")[0] || startDate.split("T")[0];
+    const dayKey = item.start_time?.split("T")[0] || rangeStart;
+    // Filter out activities outside the selected date range
+    if (dayKey < rangeStart || dayKey > rangeEnd) return;
     if (!dayGroups[dayKey]) {
       dayGroups[dayKey] = [];
     }
@@ -266,8 +272,8 @@ export default function ItineraryGenerationPage() {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    if (end <= start) {
-      alert("End date must be after start date");
+    if (end < start) {
+      alert("End date cannot be before start date");
       return;
     }
 
@@ -472,37 +478,117 @@ export default function ItineraryGenerationPage() {
               )}
             </div>
 
-            {/* Date Range Selection */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Date *
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                  />
+            {/* 💝 Valentine's Day Exclusive Campaign */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 p-[1px] mb-2">
+              <div className="rounded-2xl bg-gradient-to-br from-rose-50 via-pink-50 to-fuchsia-50 p-6 relative overflow-hidden">
+                {/* Decorative elements */}
+                <div className="absolute top-2 right-4 text-4xl opacity-20 select-none">💝</div>
+                <div className="absolute bottom-2 left-4 text-3xl opacity-15 select-none">🌹</div>
+                <div className="absolute top-1/2 right-16 text-2xl opacity-10 select-none">✨</div>
+
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">💗</span>
+                    <h3 className="text-lg font-bold bg-gradient-to-r from-rose-600 to-fuchsia-600 bg-clip-text text-transparent">
+                      Single&apos;s Valentine&apos;s Day Exclusive
+                    </h3>
+                  </div>
+                  <p className="text-sm text-rose-700/80 mb-4 max-w-md">
+                    Who says Valentine&apos;s Day is only for couples? Treat yourself to an unforgettable solo day — 
+                    spa, art, great food, and your own company. You deserve it. 💫
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Set date to Feb 14
+                      setStartDate("2026-02-14");
+                      setEndDate("2026-02-14");
+                      // Pre-fill curated solo Valentine's interests
+                      setSelectedTags([
+                        "Spa",
+                        "Self-care",
+                        "Museums",
+                        "Art Galleries",
+                        "Photography",
+                        "Live Music",
+                        "Cinema",
+                      ]);
+                    }}
+                    className="group inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-rose-500 to-fuchsia-500 hover:from-rose-600 hover:to-fuchsia-600 text-white text-sm font-semibold rounded-full transition-all duration-300 shadow-lg shadow-rose-500/25 hover:shadow-xl hover:shadow-rose-500/30 hover:scale-[1.02]"
+                  >
+                    <span>🎉 Plan My Solo Valentine&apos;s Day</span>
+                  </button>
                 </div>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  End Date *
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    min={startDate || new Date().toISOString().split("T")[0]}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                  />
+            {/* Date Range Selection */}
+            <div>
+              {/* Quick date presets */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (startDate) {
+                      setEndDate(startDate);
+                    } else {
+                      const today = new Date().toISOString().split("T")[0];
+                      setStartDate(today);
+                      setEndDate(today);
+                    }
+                  }}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                    startDate && startDate === endDate
+                      ? "bg-violet-600 text-white"
+                      : "bg-violet-50 text-violet-700 hover:bg-violet-100"
+                  }`}
+                >
+                  ☀️ One Day
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const weekend = getUpcomingWeekend();
+                    setStartDate(weekend.startDate.split("T")[0]);
+                    setEndDate(weekend.endDate.split("T")[0]);
+                  }}
+                  className="px-3 py-1.5 text-xs font-medium rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors"
+                >
+                  🗓️ This Weekend
+                </button>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Start Date *
+                  </label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      min={new Date().toISOString().split("T")[0]}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    End Date *
+                  </label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      min={startDate || new Date().toISOString().split("T")[0]}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -513,24 +599,37 @@ export default function ItineraryGenerationPage() {
                 <Calendar className="w-5 h-5 text-blue-600" />
                 <p className="text-sm text-blue-700">
                   <strong>Selected dates:</strong>{" "}
-                  {new Date(startDate + "T00:00:00").toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}{" "}
-                  -{" "}
-                  {new Date(endDate + "T00:00:00").toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}{" "}
-                  (
-                  {Math.ceil(
-                    (new Date(endDate + "T00:00:00").getTime() -
-                      new Date(startDate + "T00:00:00").getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  ) + 1}{" "}
-                  days)
+                  {startDate === endDate ? (
+                    <>
+                      {new Date(startDate + "T00:00:00").toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}{" "}
+                      (1 day)
+                    </>
+                  ) : (
+                    <>
+                      {new Date(startDate + "T00:00:00").toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}{" "}
+                      -{" "}
+                      {new Date(endDate + "T00:00:00").toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}{" "}
+                      (
+                      {Math.ceil(
+                        (new Date(endDate + "T00:00:00").getTime() -
+                          new Date(startDate + "T00:00:00").getTime()) /
+                          (1000 * 60 * 60 * 24)
+                      ) + 1}{" "}
+                      days)
+                    </>
+                  )}
                 </p>
               </div>
             )}
