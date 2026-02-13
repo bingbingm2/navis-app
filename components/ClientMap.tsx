@@ -196,6 +196,15 @@ export default function ClientMap({ places, dayNumber, fullHeight = false, selec
 
         markersRef.current = markers;
 
+        // Helper: calculate bearing between two lat/lng points (degrees, clockwise from north)
+        const getBearing = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+          const toRad = (d: number) => (d * Math.PI) / 180;
+          const dLng = toRad(lng2 - lng1);
+          const y = Math.sin(dLng) * Math.cos(toRad(lat2));
+          const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
+          return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+        };
+
         // Draw path connecting places
         if (pathCoordinates.length > 1) {
           // Shadow layer
@@ -225,6 +234,118 @@ export default function ClientMap({ places, dayNumber, fullHeight = false, selec
             lineCap: "round",
             lineJoin: "round",
             className: "animated-path",
+          }).addTo(map);
+
+          // Direction arrows at midpoints between consecutive places
+          for (let i = 0; i < pathCoordinates.length - 1; i++) {
+            const [lat1, lng1] = pathCoordinates[i];
+            const [lat2, lng2] = pathCoordinates[i + 1];
+            const midLat = (lat1 + lat2) / 2;
+            const midLng = (lng1 + lng2) / 2;
+            const bearing = getBearing(lat1, lng1, lat2, lng2);
+
+            const arrowIcon = L.divIcon({
+              className: "direction-arrow",
+              html: `
+                <div style="
+                  width: 22px;
+                  height: 22px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  transform: rotate(${bearing}deg);
+                  filter: drop-shadow(0 1px 3px rgba(124, 58, 237, 0.4));
+                ">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 1L13 11L8 8.5L3 11L8 1Z" fill="#7c3aed" stroke="white" stroke-width="1" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              `,
+              iconSize: [22, 22],
+              iconAnchor: [11, 11],
+            });
+
+            L.marker([midLat, midLng], {
+              icon: arrowIcon,
+              interactive: false,
+              zIndexOffset: 400,
+            }).addTo(map);
+          }
+        }
+
+        // Start marker label
+        if (validPlaces.length >= 1) {
+          const startIcon = L.divIcon({
+            className: "start-end-label",
+            html: `
+              <div style="
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                background: #10b981;
+                color: white;
+                padding: 3px 10px 3px 6px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 700;
+                font-family: 'Quicksand', sans-serif;
+                white-space: nowrap;
+                box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+                border: 2px solid white;
+                letter-spacing: 0.03em;
+              ">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <circle cx="6" cy="6" r="4" fill="white" opacity="0.9"/>
+                  <circle cx="6" cy="6" r="2" fill="#10b981"/>
+                </svg>
+                START
+              </div>
+            `,
+            iconSize: [60, 24],
+            iconAnchor: [30, 42],
+          });
+          L.marker([validPlaces[0].latitude, validPlaces[0].longitude], {
+            icon: startIcon,
+            interactive: false,
+            zIndexOffset: 600,
+          }).addTo(map);
+        }
+
+        // End marker label
+        if (validPlaces.length >= 2) {
+          const last = validPlaces[validPlaces.length - 1];
+          const endIcon = L.divIcon({
+            className: "start-end-label",
+            html: `
+              <div style="
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                background: #ef4444;
+                color: white;
+                padding: 3px 10px 3px 6px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 700;
+                font-family: 'Quicksand', sans-serif;
+                white-space: nowrap;
+                box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+                border: 2px solid white;
+                letter-spacing: 0.03em;
+              ">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <rect x="3" y="3" width="6" height="6" rx="1" fill="white" opacity="0.9"/>
+                </svg>
+                END
+              </div>
+            `,
+            iconSize: [48, 24],
+            iconAnchor: [24, 42],
+          });
+          L.marker([last.latitude, last.longitude], {
+            icon: endIcon,
+            interactive: false,
+            zIndexOffset: 600,
           }).addTo(map);
         }
 

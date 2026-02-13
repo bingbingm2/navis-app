@@ -11,6 +11,11 @@ import {
   Compass,
   ChevronLeft,
   ChevronRight,
+  Mail,
+  Send,
+  Loader2,
+  CheckCircle,
+  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Quicksand } from "next/font/google";
@@ -35,6 +40,11 @@ export default function ItineraryPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [selectedEventIndex, setSelectedEventIndex] = useState<number | null>(null);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
   // Memoize places so the map doesn't rebuild on every render (e.g. when selectedEventIndex changes)
   const currentDayPlaces = useMemo(() => {
@@ -73,11 +83,46 @@ export default function ItineraryPage() {
     setLoading(false);
   }, []);
 
-  const handleLoadPhotos = () => {
-    if (userId) {
-      sessionStorage.setItem("userId", userId);
+  const handleSendEmail = async () => {
+    if (!emailInput.trim() || !tripData) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailInput)) {
+      setEmailError("Please enter a valid email address");
+      return;
     }
-    router.push("/create");
+
+    setEmailSending(true);
+    setEmailError("");
+
+    try {
+      const response = await fetch("/api/send-itinerary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: emailInput,
+          itinerary: tripData,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setEmailSent(true);
+        setTimeout(() => {
+          setShowEmailModal(false);
+          setEmailSent(false);
+          setEmailInput("");
+        }, 2500);
+      } else {
+        setEmailError(data.error || "Failed to send email. Please try again.");
+      }
+    } catch (error: any) {
+      console.error("Email send error:", error);
+      setEmailError("Something went wrong. Please try again.");
+    } finally {
+      setEmailSending(false);
+    }
   };
 
   // Updated to work with tags array
@@ -383,14 +428,14 @@ export default function ItineraryPage() {
                 📧 Get this itinerary in your inbox
               </h3>
               <p className="text-sm text-gray-600 mb-3">
-                Receive a beautifully formatted copy of your trip plan.
+                Receive a beautifully formatted PDF of your trip plan.
               </p>
               <button
-                onClick={handleLoadPhotos}
+                onClick={() => { setShowEmailModal(true); setEmailSent(false); setEmailError(""); }}
                 className="w-full px-4 py-2 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700 transition-colors flex items-center justify-center gap-2"
               >
-                <Compass className="w-4 h-4" />
-                Send to Email
+                <Mail className="w-4 h-4" />
+                Send PDF to Email
               </button>
             </div>
           </div>
@@ -410,6 +455,94 @@ export default function ItineraryPage() {
           )}
         </div>
       </div>
+
+      {/* Email PDF Modal */}
+      {showEmailModal && tripData && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            {emailSent ? (
+              <div className="p-8 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Sent!</h3>
+                <p className="text-gray-500 text-sm">Your itinerary PDF has been sent to <strong>{emailInput}</strong></p>
+              </div>
+            ) : (
+              <>
+                <div className="bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <Mail className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-bold text-lg">Email Itinerary</h3>
+                        <p className="text-white/70 text-sm">{tripData.destination}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setShowEmailModal(false); setEmailError(""); }}
+                      className="w-8 h-8 rounded-lg bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors"
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <p className="text-gray-600 text-sm mb-4">
+                    We&apos;ll generate a beautifully formatted PDF of your trip and send it to your email.
+                  </p>
+
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email address</label>
+                  <input
+                    type="email"
+                    value={emailInput}
+                    onChange={(e) => { setEmailInput(e.target.value); setEmailError(""); }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSendEmail();
+                    }}
+                    placeholder="you@example.com"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all"
+                    autoFocus
+                  />
+
+                  {emailError && (
+                    <p className="text-red-500 text-sm mt-2">{emailError}</p>
+                  )}
+
+                  <div className="flex gap-3 mt-5">
+                    <button
+                      onClick={() => { setShowEmailModal(false); setEmailError(""); }}
+                      className="flex-1 px-4 py-3 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSendEmail}
+                      disabled={emailSending || !emailInput.trim()}
+                      className="flex-1 px-4 py-3 bg-violet-600 text-white rounded-xl font-medium hover:bg-violet-700 disabled:opacity-50 disabled:hover:bg-violet-600 transition-colors flex items-center justify-center gap-2"
+                    >
+                      {emailSending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          Send PDF
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Mobile: Map Toggle Button */}
       <div className="lg:hidden fixed bottom-6 right-6 z-50">
