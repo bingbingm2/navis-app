@@ -155,7 +155,7 @@ export default function PublicGallery() {
             <div>
               <h2 className="text-2xl font-bold">Video Demo</h2>
               <p className="text-gray-600">
-                See how Naviya creates cinematic travel experiences
+                See how Navis creates cinematic travel experiences
               </p>
             </div>
           </div>
