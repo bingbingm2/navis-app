@@ -31,10 +31,6 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Navis - AI Travel Planner",
   description: "Generate personalized travel itineraries with AI",
-  icons: {
-    icon: "/images/Naviya-logo-svg.svg",
-    apple: "/images/Naviya-logo-svg.svg",
-  },
 };
 
 export default function RootLayout({

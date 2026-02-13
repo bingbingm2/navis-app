@@ -11,6 +11,11 @@
   font-family: "Pinyon Script", cursive;
 }
 
+/* Rounded beach/sea vibe font */
+.font-beach {
+  font-family: "Quicksand", sans-serif;
+}
+
 /* === LOADING ANIMATION SEQUENCE === */
 
 /* Stage 1: Background fade in */
