@@ -381,7 +381,7 @@ export async function POST(request: NextRequest) {
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
-      from: "Naviya <onboarding@resend.dev>",
+      from: "Naviya <noreply@yi-universe.com>",
       to: email,
       subject: `Your ${itinerary.destination} Travel Itinerary`,
       html: `
