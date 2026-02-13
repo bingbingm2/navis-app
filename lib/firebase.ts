@@ -18,9 +18,9 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Analytics only works in the browser
+// Analytics only works in the browser and only in production (exclude localhost/dev traffic)
 let analytics: Analytics | null = null;
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
   isSupported().then((supported) => {
     if (supported) {
       analytics = getAnalytics(app);
