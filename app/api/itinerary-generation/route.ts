@@ -32,10 +32,18 @@ function transformToItineraryClient(
   // Group by day
   const dayGroups = new Map<string, any[]>();
 
+  // Extract the selected date range boundaries for filtering
+  const rangeStart = providedStartDate?.split("T")[0];
+  const rangeEnd = providedEndDate?.split("T")[0];
+
   itinerary.forEach((item: any) => {
     // Extract date directly from start_time string to avoid timezone conversion
     // Format: "2026-01-07T19:00:00" -> extract "2026-01-07"
     const dayKey = item.start_time.split("T")[0];
+
+    // Filter out activities outside the selected date range
+    if (rangeStart && dayKey < rangeStart) return;
+    if (rangeEnd && dayKey > rangeEnd) return;
 
     if (!dayGroups.has(dayKey)) {
       dayGroups.set(dayKey, []);
