@@ -478,49 +478,6 @@ export default function ItineraryGenerationPage() {
               )}
             </div>
 
-            {/* 💝 Valentine's Day Exclusive Campaign */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 p-[1px] mb-2">
-              <div className="rounded-2xl bg-gradient-to-br from-rose-50 via-pink-50 to-fuchsia-50 p-6 relative overflow-hidden">
-                {/* Decorative elements */}
-                <div className="absolute top-2 right-4 text-4xl opacity-20 select-none">💝</div>
-                <div className="absolute bottom-2 left-4 text-3xl opacity-15 select-none">🌹</div>
-                <div className="absolute top-1/2 right-16 text-2xl opacity-10 select-none">✨</div>
-
-                <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg">💗</span>
-                    <h3 className="text-lg font-bold bg-gradient-to-r from-rose-600 to-fuchsia-600 bg-clip-text text-transparent">
-                      Single&apos;s Valentine&apos;s Day Exclusive
-                    </h3>
-                  </div>
-                  <p className="text-sm text-rose-700/80 mb-4 max-w-md">
-                    Who says Valentine&apos;s Day is only for couples? Treat yourself to an unforgettable solo day — 
-                    spa, art, great food, and your own company. You deserve it. 💫
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // Set date to Feb 14
-                      setStartDate("2026-02-14");
-                      setEndDate("2026-02-14");
-                      // Pre-fill curated solo Valentine's interests
-                      setSelectedTags([
-                        "Spa",
-                        "Self-care",
-                        "Museums",
-                        "Art Galleries",
-                        "Photography",
-                        "Live Music",
-                        "Cinema",
-                      ]);
-                    }}
-                    className="group inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-rose-500 to-fuchsia-500 hover:from-rose-600 hover:to-fuchsia-600 text-white text-sm font-semibold rounded-full transition-all duration-300 shadow-lg shadow-rose-500/25 hover:shadow-xl hover:shadow-rose-500/30 hover:scale-[1.02]"
-                  >
-                    <span>🎉 Plan My Solo Valentine&apos;s Day</span>
-                  </button>
-                </div>
-              </div>
-            </div>
 
             {/* Date Range Selection */}
             <div>
